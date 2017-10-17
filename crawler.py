@@ -1,5 +1,5 @@
 import feedparser, re, urllib, sys, os, json
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 
 class RSSCRWLR4TMBLR:
     def __init__(self):
@@ -56,22 +56,29 @@ class RSSCRWLR4TMBLR:
             return []
 
     def videoExtractor(self, subject):
-        videoRe = re.compile(r"(\<source src\=\")((https?\:\/+([a-z0-9\.\_]+\/)+)(tumblr_[\S]{17})(\/?([0-9]{3})?))(\" type\=\"video\/(\S{3,4})\"\>)")
+        # \<source src=\"(.+?)\" ?type=\"(.+?)\"\>
+        videoRe = re.compile('\<source src=\"(.+?)\" ?type=\"(.+?)\"\>')
         if videoRe.search(subject) != None:
-            videoPrefix = "https://vt.tumblr.com/"
-            videoBody = videoRe.search(subject).group(5)
-            try:
-                videoBodySurFix = "_" + videoRe.search(subject).group(7)
-            except TypeError:
-                videoBodySurFix = ""
-            videoType = "." + videoRe.search(subject).group(9)
-            videoSurFix = "#_=_"
-            videoUrl = videoPrefix + videoBody + videoBodySurFix + videoType + videoSurFix
-            videoFile = videoBody + videoType
-            return {
-                'url': videoUrl,
-                'filename': videoFile
-            }
+            path = lambda x: urlparse(x).path.split('/')[-1]
+            ext = lambda x: x.split('/')[-1]
+            url = lambda x: urljoin('https://vt.tumblr.com/', x)
+            filename = lambda path, ext: '.'.join([path, ext])
+
+            return list( map( lambda x: { 'url': url(x), 'filename': filename(path(x[0]), ext(x[1])) }, videoRe.findall(subject) ) )
+            # videoPrefix = "https://vt.tumblr.com/"
+            # videoBody = videoRe.search(subject).group(5)
+            # try:
+            #     videoBodySurFix = "_" + videoRe.search(subject).group(7)
+            # except TypeError:
+            #     videoBodySurFix = ""
+            # videoType = "." + videoRe.search(subject).group(9)
+            # videoSurFix = "#_=_"
+            # videoUrl = videoPrefix + videoBody + videoBodySurFix + videoType + videoSurFix
+            # videoFile = videoBody + videoType
+            # return {
+            #     'url': videoUrl,
+            #     'filename': videoFile
+            # }
         else:
             return []
 
