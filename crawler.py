@@ -56,7 +56,6 @@ class RSSCRWLR4TMBLR:
             return []
 
     def videoExtractor(self, subject):
-        # \<source src=\"(.+?)\" ?type=\"(.+?)\"\>
         videoRe = re.compile('\<source src=\"(.+?)\" ?type=\"(.+?)\"\>')
         if videoRe.search(subject) != None:
             path = lambda x: urlparse(x).path.split('/')[-1]
@@ -65,20 +64,6 @@ class RSSCRWLR4TMBLR:
             filename = lambda path, ext: '.'.join([path, ext])
 
             return list( map( lambda x: { 'url': url(x), 'filename': filename(path(x[0]), ext(x[1])) }, videoRe.findall(subject) ) )
-            # videoPrefix = "https://vt.tumblr.com/"
-            # videoBody = videoRe.search(subject).group(5)
-            # try:
-            #     videoBodySurFix = "_" + videoRe.search(subject).group(7)
-            # except TypeError:
-            #     videoBodySurFix = ""
-            # videoType = "." + videoRe.search(subject).group(9)
-            # videoSurFix = "#_=_"
-            # videoUrl = videoPrefix + videoBody + videoBodySurFix + videoType + videoSurFix
-            # videoFile = videoBody + videoType
-            # return {
-            #     'url': videoUrl,
-            #     'filename': videoFile
-            # }
         else:
             return []
 
@@ -95,7 +80,6 @@ class RSSCRWLR4TMBLR:
                 print(e)
                 return None
             except UnicodeEncodeError as e:
-                # print(e)
                 print(downloadDict['filename'])
                 return None
         else:
@@ -103,5 +87,4 @@ class RSSCRWLR4TMBLR:
 
 
 rsscrwr = RSSCRWLR4TMBLR()
-# test = '<img src="https://78.media.tumblr.com/a90ecb4f7417a844564d4d125361f9f1/tumblr_os38kp6Q1V1w69jrdo1_500.jpg"/><br/> <br/><img src="https://78.media.tumblr.com/a14f51850cccf3f49495a30871dada25/tumblr_os38kp6Q1V1w69jrdo2_500.jpg"/><br/> <br/><img src="https://78.media.tumblr.com/aa688d83172db1a3c02484cb6c2e8e0c/tumblr_os38kp6Q1V1w69jrdo3_500.jpg"/><br/> <br/><img src="https://78.media.tumblr.com/c58c11a9f5d92ba5e359dd1e0aa7b52c/tumblr_os38kp6Q1V1w69jrdo4_500.jpg"/><br/> <br/><img src="https://78.media.tumblr.com/a9e795b1f0338ff436d4f5ad9e5b9b35/tumblr_os38kp6Q1V1w69jrdo5_500.jpg"/><br/> <br/><img src="https://78.media.tumblr.com/4f6a0b1228ff9e58f1de46afc9657a87/tumblr_os38kp6Q1V1w69jrdo6_500.jpg"/><br/> <br/><img src="https://78.media.tumblr.com/18e043edb619583347ee384592b233e6/tumblr_os38kp6Q1V1w69jrdo7_500.jpg"/><br/> <br/><p>大吊的援交JK少女<br/>'
 rsscrwr.readFeed()
