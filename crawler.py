@@ -49,21 +49,34 @@ class RSSCRWLR4TMBLR:
                         self.downloader(download)
 
     def imageExtractor(self, subject):
-        imgRe = re.compile('\<img src=\"(.+?)\"\/?\>')
+        imgRe = re.compile('\<img src=\"(.+?)\" ?\/?\>')
         if imgRe.search(subject) != None:
             return list(map(lambda x: {'url': x, 'filename': urlparse(x).path.split('/')[-1]}, imgRe.findall(subject)))
         else:
             return []
 
-    def videoExtractor(self, subject):
-        videoRe = re.compile('\<source src=\"(.+?)\" ?type=\"(.+?)\"\>')
-        if videoRe.search(subject) != None:
-            path = lambda x: urlparse(x).path.split('/')[-1]
-            ext = lambda x: x.split('/')[-1]
-            url = lambda x: urljoin('https://vt.tumblr.com/', x)
-            filename = lambda path, ext: '.'.join([path, ext])
+    def pathProcessor(self, subject, videotype):
+        try:
+            videotype = videotype.split('/')[-1]
+        except AttributeError:
+            videotype = videotype[0].split('/')[-1]
+        a = re.findall('(tumblr_.+)\/([\d]+)', urlparse(subject).path)
+        b = re.findall('(tumblr_.+)', urlparse(subject).path)
+        if len(a):
+            return {
+                'url': urljoin('https://vt.tumblr.com/', '.'.join(['_'.join(a[0]), videotype])) + '#_=_',
+                'filename': '.'.join(['_'.join(a[0]), videotype])
+            }
+        else:
+            return {
+                'url': urljoin('https://vt.tumblr.com/', '.'.join([b[0], videotype])) + '#_=_',
+                'filename': '.'.join([b[0], videotype])
+            }
 
-            return list( map( lambda x: { 'url': url(x), 'filename': filename(path(x[0]), ext(x[1])) }, videoRe.findall(subject) ) )
+    def videoExtractor(self, subject):
+        videoRe = re.compile('\<source src=\"(.+?)\" ?type=\"(.+?)\" ?\/?\>')
+        if videoRe.search(subject) != None:
+            return list(map(lambda x: self.pathProcessor(x[0], x[1]), videoRe.findall(subject)))
         else:
             return []
 
@@ -82,8 +95,12 @@ class RSSCRWLR4TMBLR:
             except UnicodeEncodeError as e:
                 print(downloadDict['filename'])
                 return None
+            except urllib.error.HTTPError as e:
+                print(e, downloadDict)
+
         else:
-            print('%s is already exists' % downloadDict['filename'])
+            # print('%s is already exists' % downloadDict['filename'])
+            pass
 
 
 rsscrwr = RSSCRWLR4TMBLR()
