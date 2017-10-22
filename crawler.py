@@ -1,36 +1,12 @@
 import feedparser, re, urllib, sys, os, json
 from urllib.parse import urlparse, urljoin
+from config import Config
 
-class RSSCRWLR4TMBLR:
+class Crawler:
     def __init__(self):
-        try:
-            with open('config.json') as config_raw:
-                self.config = json.load(config_raw)
-                config_raw.close()
-                downloadFolder = os.path.join(
-                    os.path.abspath(__file__),
-                    self.config['downloadFolderName'] + '/'
-                )
-                if not os.path.isdir(self.config['downloadFolderName']):
-                    try:
-                        os.makedirs(self.config['downloadFolderName'])
-                    except OSError as e:
-                        print(e)
-                self.config['downloadPath'] = downloadFolder
-
-        except FileNotFoundError as e:
-            with open('config.json', 'w') as write_config:
-                default_config = {
-                    'rssList': [
-                        'https://tragedygirlsmovie.tumblr.com/'
-                    ],
-                    'downloadFolderName': 'tmblr'
-                }
-                write_config.write(json.dumps(default_config))
-                write_config.close()
-                print('file wirte done, restart this program')
-        except:
-            return None
+        config = Config()
+        self.config = config.config
+        return None
 
     def readFeed(self):
         for rss in self.config['rssList']:
@@ -101,7 +77,3 @@ class RSSCRWLR4TMBLR:
         else:
             # print('%s is already exists' % downloadDict['filename'])
             pass
-
-
-rsscrwr = RSSCRWLR4TMBLR()
-rsscrwr.readFeed()
